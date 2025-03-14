@@ -9,6 +9,12 @@ enum Priority{
     HIGH
 };
 
+typedef struct Date{
+    int year;
+    int month;
+    int day;
+}Date;
+
 typedef struct Description{
     char* data;
     int length;
@@ -17,6 +23,7 @@ typedef struct Description{
 
 typedef struct Task{
     Description* description;
+    Date* dueDateStruct;
     char* dueDate;
     int index;
     bool completed;

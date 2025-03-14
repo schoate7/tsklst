@@ -118,9 +118,12 @@ void updateTask(Task* firstTask, Task* lastTask, int listLength){
     printf("Current due date: %s\n", currentTask->dueDate);
     changeDueDateResponse = getChar("Change due date? ");
     if(changeDueDateResponse == 'Y'){
-        newDueDate = getDueDate("Do you want to set a new date (Y), or remove the existing date (N)? ");
+        Date* dateStruct = malloc(sizeof(Date));
+        newDueDate = getDueDate("Do you want to set a new date (Y), or remove the existing date (N)? ", dateStruct);
         free(currentTask->dueDate);
+        free(currentTask->dueDateStruct);
         currentTask -> dueDate = newDueDate;
+        currentTask -> dueDateStruct = dateStruct;
     }else{
         printf("Leaving due date unchanged...\n");
     }

@@ -8,18 +8,12 @@
 #include "edittask.h"
 #include "fileops.h"
 #include "listtasks.h"
+#include "movetask.h"
 #include "Task.h"
 
 #define TITLE_BAR "------------------------------------\033[1mtsklst home\033[0m------------------------------------\n"
 #define SAVE_WARNING "\033[33mChanges must be saved before quitting.\033[0m\n"
 #define COMMAND_LIST "[L]ist | [A]dd | [D]elete | [E]dit | [M]ove | [C]omplete | [O]pen | [S]ave | [H]elp | [Q]uit:  "
-
-//TODO List:
-//Add handling for passed in file name form command args
-//Add option to clear completed tasks
-//Quit handling, detect unsaved changes and prompt to save
-//Add subtasks, have list loop to offer detailed view
-//Polish visual output
 
 void home(char *fname[]){
     bool runMode = true;
@@ -69,7 +63,14 @@ void home(char *fname[]){
                 updateTask(firstTask, lastTask, currentIndex);
                 break;
             case 'M':
-                printf("Move TBD\n");
+                editReturn = moveTask(firstTask, lastTask, currentIndex);
+                if(editReturn != NULL && editReturn->firstTask != NULL){
+                    firstTask = editReturn->firstTask;
+                    lastTask = editReturn->lastTask;
+                    free(editReturn);
+                }else{
+                    free(editReturn);
+                }
                 break;
             case 'C':
                 changeCompletionStatus(firstTask, currentIndex);
@@ -86,7 +87,14 @@ void home(char *fname[]){
                 }
                 break;
             case 'Q':
-                printf("Quit routine TBD\n");
+                while(selection != 'Y' && selection != 'N'){
+                    selection = getChar("Do you want to save changes (Y/N)? ");
+                    if(selection != 'Y' && selection != 'N'){
+                        printf("Invalid input, please select Y or N.\n");
+                    }else if(selection == 'Y'){
+                        saveList(firstTask, currentIndex);
+                    }
+                }
                 runMode = false;
                 break;
         }

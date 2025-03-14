@@ -13,7 +13,8 @@
 			"stdbool.h": "c",
 			"wchar.h": "c",
 			"unistd.h": "c",
-			"time.h": "c"
+			"time.h": "c",
+			"movetask.h": "c"
 		}
 	}
 }

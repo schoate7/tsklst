@@ -14,6 +14,7 @@
 Task* addTask(Task* firstTask, Task* lastTask){
     Task* newTask = malloc(sizeof(Task));
     Description* desc;
+    Date* dateStruct = malloc(sizeof(Date));
     char* dueDate = malloc(10 * sizeof(char));
 
     char* descIn = NULL;
@@ -25,7 +26,8 @@ Task* addTask(Task* firstTask, Task* lastTask){
         desc = createDescription(descIn);
     }
     
-    dueDate = getDueDate(DUE_DATE_PROMPT);
+    dueDate = getDueDate(DUE_DATE_PROMPT, dateStruct);
+    newTask->dueDateStruct = dateStruct;
 
     priorityResponse = getChar(PRIORITY_PROMPT);
     printf("\n");

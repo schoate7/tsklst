@@ -19,6 +19,7 @@ int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
     char* dueDate;
     int completionNum;
     bool completion;
+    Date* dateStruct = calloc(1, sizeof(Date));
 
     column = strtok(line, ",");
     char* columnEndPtr;
@@ -42,6 +43,15 @@ int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
                 completionNum = strtol(column, &columnEndPtr, BASE_NUM);
                 completion = completionNum;
                 break;
+            case 5:
+                dateStruct->year = strtol(column, &columnEndPtr, BASE_NUM);
+                break;
+            case 6:
+                dateStruct->month = strtol(column, &columnEndPtr, BASE_NUM);
+                break;
+            case 7:
+                dateStruct->day = strtol(column, &columnEndPtr, BASE_NUM);
+                break;
             default:
                 return 0;
         }
@@ -56,6 +66,7 @@ int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
     strcpy(taskPtr->dueDate, dueDate);
     taskPtr->completed = completion;
     taskPtr->previousTask = prvTaskPtr;
+    taskPtr->dueDateStruct = dateStruct;
 
     return 1;
 }
@@ -150,13 +161,15 @@ int saveList(Task* firstTask, int listLength){
     while(currentTask->nextTask != NULL){
         taskPriority = currentTask -> priority;
         taskCompletion = currentTask -> completed;
-        fprintf(f, "%i,%s,%i,%s,%i\n", currentTask->index, currentTask->description->data, taskPriority, currentTask->dueDate, taskCompletion);
+        fprintf(f, "%i,%s,%i,%s,%i,%i,%i,%i\n", currentTask->index, currentTask->description->data, taskPriority, 
+            currentTask->dueDate, taskCompletion, currentTask->dueDateStruct->year, currentTask->dueDateStruct->month, currentTask->dueDateStruct->day);
         currentTask = currentTask->nextTask;
     }
     
     taskPriority = currentTask -> priority;
     taskCompletion = currentTask -> completed;
-    fprintf(f, "%i,%s,%i,%s,%i", currentTask->index, currentTask->description->data, taskPriority, currentTask->dueDate, taskCompletion);
+    fprintf(f, "%i,%s,%i,%s,%i,%i,%i,%i", currentTask->index, currentTask->description->data, taskPriority, 
+        currentTask->dueDate, taskCompletion, currentTask->dueDateStruct->year, currentTask->dueDateStruct->month, currentTask->dueDateStruct->day);
 
     fclose(f);
     printf("List saved to %s...\n\n", filename);

@@ -6,6 +6,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "Task.h"
+
 #define NUM_BASE 10
 #define DAY_MON_LEN 2
 #define YEAR_LEN 4
@@ -66,7 +68,7 @@ int getFloat(char prompt[]){
     return f;
 }
 
-char* getDueDate(char* prompt){
+char* getDueDate(char* prompt, Date* date){
     char* dueDate = malloc(DATE_LEN * sizeof(char));
     char* dueDateEndPtr;
     char* dueMonth = malloc(DAY_MON_LEN * sizeof(char));
@@ -176,9 +178,15 @@ char* getDueDate(char* prompt){
         strcat(dueDate, dueDay);
         strcat(dueDate, "/");
         strcat(dueDate, dueYear);
+        date->day = dueDayInt;
+        date->month = dueMonthInt;
+        date->year = dueYearInt;
     }else{
         strcpy(dueDate, "None");
+        date->day = 0;
+        date->month = 0;
+        date->year = 0;
     }
-    free(dueDay); free(dueMonth); free(dueYear); free(dueYearIn);
+    free(dueDay); free(dueMonth); free(dueYear);
     return dueDate;
 }

@@ -8,14 +8,18 @@
 #include "Task.h"
 
 #define NUM_BASE 10
-#define LIST_MENU "[L]ist all tasks | By [P]riority | By [C]ompletion | By [D]ate | [M]ain Menu: "
+#define LIST_MENU "[L]ist all tasks | By [P]riority | By [C]ompletion | By [D]ate | [R]eturn: "
 #define TABLE_HEADER "\n|-\033[1m#\033[0m-|-------------------------\033[1mTask Name\033[0m------------------------|-\033[1mPriority\033[0m-|--\033[1mDue Date\033[0m--|-\033[1mCompletion\033[0m-|\n"
 #define ROW_SEPARATOR "|---|----------------------------------------------------------|----------|------------|------------|\n"
+#define INDEX_PADDING 3
+#define TASK_NAME_PADDING 56
+#define PRIORITY_PADDING 8
+#define DUE_DATE_PADDING 10
+#define COMPLETION_PADDING 10
 
-//TODO: List by date
 
-bool checkIfDateHasPassed(char* date){
-    if(date[0] == 'N'){
+bool checkIfDateHasPassed(Date* dueDate){
+    if(dueDate->year == 0){
         return false;
     }
 
@@ -27,31 +31,15 @@ bool checkIfDateHasPassed(char* date){
     int month = timeInfo -> tm_mon + 1;
     int year = timeInfo ->tm_year + 1900;
 
-    char* dueYear = malloc(4*sizeof(char));
-    char* dueYearEndPtr;
-    strncpy(dueYear, date + 6, 4);
-    int dueYearInt = strtol(dueYear, &dueYearEndPtr, NUM_BASE);
-
-    char* dueMonth = malloc(2*sizeof(char));
-    char* dueMonthEndPtr;
-    strncpy(dueMonth, date, 2);
-    int dueMonthInt = strtol(dueMonth, &dueMonthEndPtr, NUM_BASE);
-
-    char* dueDay = malloc(2*sizeof(char));
-    char* dueDayEndPtr;
-    strncpy(dueDay, date + 3, 2);
-    int dueDayInt = strtol(dueDay, &dueDayEndPtr, NUM_BASE);
-    free(dueYear); free(dueMonth); free(dueDay);
-
-    if (dueYearInt > year){
+    if (dueDate->year > year){
         return false;
-    }else if (dueYearInt == year){
-        if(dueMonthInt > month){
+    }else if (dueDate->year == year){
+        if(dueDate->month > month){
             return false;
-        }else if (dueMonthInt < month){
+        }else if (dueDate->month < month){
             return true;
-        }else if (dueMonthInt == month){
-            if(dueDayInt > day){
+        }else if (dueDate->month == month){
+            if(dueDate->day > day){
                 return false;
             }else{
                 return true;
@@ -105,16 +93,24 @@ char* padStringToColumnLength(char* str, int len){
 }
 
 void printTaskLine(Task* task){
-    bool dueDatePassed = checkIfDateHasPassed(task->dueDate);
+    bool dueDatePassed = checkIfDateHasPassed(task->dueDateStruct);
     Description* description = task -> description;
     int taskPriority = task->priority;
     char* i = malloc(6 * sizeof(char));
     snprintf(i, 6, "%d", task->index);
-    char* index = centerStringToColumnLength(i, 3);
-    char* taskName = padStringToColumnLength(description -> data, 56);
-    char* priorityLabel = centerStringToColumnLength(taskPriority == 0 ? "Low\0" : taskPriority == 2 ? "High\0" : "Medium\0", 8);
-    char* dueDate = centerStringToColumnLength(task -> dueDate, 10);
-    char* completionStatus = centerStringToColumnLength(task -> completed == true ? "Complete\0" : "Incomplete\0", 10);
+    char* index = centerStringToColumnLength(i, INDEX_PADDING);
+    char* taskName = padStringToColumnLength(description -> data, TASK_NAME_PADDING);
+    char* priorityLabel = centerStringToColumnLength(taskPriority == 0 ? "Low\0" : taskPriority == 2 ? "High\0" : "Medium\0", PRIORITY_PADDING);
+    char* dueDate = calloc(10, sizeof(char));
+    if(task->dueDateStruct->year == 0){
+        dueDate = centerStringToColumnLength("None", DUE_DATE_PADDING);
+    }else{
+        sprintf(dueDate, "%02i/%02i/%i", task->dueDateStruct->month, task->dueDateStruct->day, task->dueDateStruct->year);
+        char* dueDateOld = dueDate;
+        dueDate = centerStringToColumnLength(dueDate, DUE_DATE_PADDING);
+        free(dueDateOld);
+    }
+    char* completionStatus = centerStringToColumnLength(task -> completed == true ? "Complete\0" : "Incomplete\0", COMPLETION_PADDING);
 
     printf("|\033[1m%s\033[0m", index);
     printf("| %s ", taskName);
@@ -136,6 +132,100 @@ void listAllTasks(Task* firstTask){
         fflush(stdout);
     }  
     printf("\n");
+}
+
+//Returns 1 if newDate is earlier than originalDate, 0 if not, tie returns 0
+int compareDates(Date* originalDate, Date* newDate){
+    if(newDate->year<originalDate->year){
+        return 1;
+    }else if(newDate->year>originalDate->year){
+        return 0;
+    }else{
+        if(newDate->month<originalDate->month){
+            return 1;
+        }else if (newDate->month>originalDate->month){
+            return 0;
+        }else{
+            if(newDate->day<originalDate->day){
+                return 1;
+            }else if (newDate->day>originalDate->month){
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
+
+void listTasksbyDate(Task* firstTask, int listLength){
+    Task* noDate[listLength];
+    Task* withDate[listLength];
+
+    int noDateIndex = 0;
+    int withDateIndex = 0;
+
+    Task* currentTask = firstTask;
+
+    while(currentTask != NULL){
+        if(currentTask-> dueDateStruct == NULL || currentTask->dueDateStruct->year == 0){
+            noDate[noDateIndex] = currentTask;
+            noDateIndex++;
+        }else if (currentTask->dueDateStruct != NULL && currentTask->dueDateStruct->year > 0){
+            int i = 0;
+            while(i < withDateIndex || withDateIndex == 0){
+                if(withDateIndex == 0){
+                    withDate[i] = currentTask;
+                    withDateIndex++;
+                    break;
+                }else{
+                    int d = compareDates(withDate[i]->dueDateStruct, currentTask->dueDateStruct);
+                    if(d == 1){
+                        for(int y = withDateIndex; y>i; y--){
+                            withDate[y] = withDate[y-1];
+                        }
+                        withDate[i] = currentTask;
+                        withDateIndex++;
+                        break;
+                    }else{
+                        i++;
+                        if (i == withDateIndex){
+                            withDate[i] = currentTask;
+                            withDateIndex++;
+                            break;
+                        }
+                    }
+                }                
+            }
+        }
+
+        if(currentTask->nextTask != NULL){
+            currentTask = currentTask->nextTask;
+        }else{
+            currentTask = NULL;
+        }
+    }
+
+    if(withDateIndex>0){
+        printf("\n\033[1mTasks with due dates:\033[0m");
+        printf(TABLE_HEADER);
+        for(int i=0; i<withDateIndex; i++){
+            currentTask = withDate[i];
+            printTaskLine(currentTask);
+        }
+    }else{
+        printf("\nNo tasks with due dates in list.\n");
+    }
+
+    if(noDateIndex>0){
+        printf("\n\033[1mTasks without due dates:\033[0m");
+        printf(TABLE_HEADER);
+        for(int i=0; i<noDateIndex; i++){
+            currentTask = noDate[i];
+            printTaskLine(currentTask);
+        }
+        printf("\n");
+    }else{
+        printf("\nNo tasks without due dates in list.\n\n");
+    }
 }
 
 void listTasksByCompletion(Task* firstTask, int listLength){
@@ -261,7 +351,7 @@ void printTaskList(Task* firstTask, int listLength){
     char userSelection;
 
     printf("\nSelect list display option\n");
-    while(userSelection != 'M'){
+    while(userSelection != 'R'){
         userSelection = getChar(LIST_MENU);
         switch(userSelection){
             case 'L':
@@ -274,13 +364,13 @@ void printTaskList(Task* firstTask, int listLength){
                 listTasksByCompletion(firstTask, listLength);
                 break;
             case 'D':
-                printf("Date TBD\n");
+                listTasksbyDate(firstTask, listLength);
                 break;
-            case 'M':
+            case 'R':
                 printf("Returning to main menu...\n\n");
                 break;
             default:
-                printf("Invalid input, please enter L, P, C, D or M.\n");
+                printf("Invalid input, please enter L, P, C, D or R.\n");
                 break;
         }
     }
