@@ -1,7 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"path": ".."
 		}
 	],
 	"settings": {
@@ -11,11 +11,7 @@
 			"stdio.h": "c",
 			"stdlib.h": "c",
 			"stdbool.h": "c",
-			"wchar.h": "c",
-			"unistd.h": "c",
-			"time.h": "c",
-			"movetask.h": "c",
-			"task.h": "c"
+			"wchar.h": "c"
 		}
 	}
 }

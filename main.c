@@ -13,12 +13,13 @@
 
 #define TITLE_BAR "------------------------------------\033[1mtsklst home\033[0m------------------------------------\n"
 #define SAVE_WARNING "\033[33mChanges must be saved before quitting.\033[0m\n"
-#define COMMAND_LIST "[L]ist | [A]dd | [D]elete | [E]dit | [M]ove | [C]omplete | [O]pen | [S]ave | [H]elp | [Q]uit:  "
+#define COMMAND_LIST "[L]ist | [A]dd | [E]dit | [M]ove | [D]elete | [C]omplete | [O]pen | [S]ave | [H]elp | [Q]uit:  "
 
 void home(char *fname){
     bool runMode = true;
     char selection = ' ';
     int currentIndex = 0;
+    int changeCount = 0;
 
     Task *firstTask = NULL;
     Task *returnTask = NULL;
@@ -49,7 +50,7 @@ void home(char *fname){
                 if (firstTask == NULL){
                     currentIndex++;
                     firstTask = returnTask;
-                    firstTask -> nextTask == NULL;
+                    firstTask -> nextTask = NULL;
                     lastTask = returnTask;
                     firstTask -> index = currentIndex;
                 }else{
@@ -69,7 +70,8 @@ void home(char *fname){
                 free(editReturn);
                 break;
             case 'E':
-                updateTask(firstTask, lastTask, currentIndex);
+                //updateTask(firstTask, lastTask, currentIndex);
+                editTaskMenu(firstTask, currentIndex);
                 break;
             case 'M':
                 editReturn = moveTask(firstTask, lastTask, currentIndex);
@@ -82,7 +84,7 @@ void home(char *fname){
                 }
                 break;
             case 'C':
-                completedTaskHandler(firstTask, currentIndex);
+                //completedTaskHandler(firstTask, currentIndex);
                 break;
             case 'S':
                 saveList(firstTask, currentIndex);

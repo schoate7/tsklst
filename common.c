@@ -92,9 +92,11 @@ char* getDueDate(char* prompt, Date* date){
 
     char dueDateResponse;
 
-    dueDateResponse = getChar(prompt);
+    if(prompt != NULL){
+        dueDateResponse = getChar(prompt);
+    }
     
-    if(dueDateResponse == 'Y'){    
+    if(dueDateResponse == 'Y' || prompt == NULL){    
         bool futureDate = false;
         int inputLength;
         int dueDayInt, dueMonthInt, dueYearInt;
@@ -218,4 +220,19 @@ int getTaskPrompt(char* prompt, int listLength){
         }
     }
     return taskIndex;
+}
+
+Task* getSelectedTask(Task* firstTask, int inputIndex){
+    Task* currentTask = firstTask;
+    int i = 1;
+
+    while(currentTask != NULL && currentTask->index != inputIndex){
+        if(currentTask->nextTask != NULL){
+            currentTask = currentTask->nextTask;
+            i++;
+        }else{
+            currentTask = NULL;
+        }
+    }
+    return currentTask;
 }

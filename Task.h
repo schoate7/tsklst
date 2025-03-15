@@ -23,6 +23,7 @@ typedef struct Description{
 typedef struct Task{
     Description* description;
     Date* dueDateStruct;
+    char* name;
     char* dueDate;
     int index;
     bool completed;

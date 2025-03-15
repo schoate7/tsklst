@@ -3,10 +3,12 @@
 
 #include "Task.h"
 
-void completedTaskHandler(Task* firstTask, int listLength);
+//void completedTaskHandler(Task* firstTask, int listLength);
 
-void updateTask(Task* firstTask, Task* lastTask, int listLength);
+//void updateTask(Task* firstTask, Task* lastTask, int listLength);
 
 EditResult* deleteTask(Task* firstTask, Task* lastTask, int listLength);
+
+void editTaskMenu(Task* firstTask, int listLength);
 
 #endif

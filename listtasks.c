@@ -46,6 +46,7 @@ static bool checkIfDateHasPassed(Date* dueDate){
             }
         }
     }
+    return false;
 }
 
 static char* centerStringToColumnLength(char* str, int len){

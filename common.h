@@ -19,6 +19,7 @@ float getFloat(char prompt[]);
 // Get functions
 char* getDueDate(char* prompt, Date* date);
 int getTaskPrompt(char* prompt, int listLength);
+Task* getSelectedTask(Task* firstTask, int taskIndex);
 
 // Put functions
 void reIndexList(Task* taskPtr, int listLength);
