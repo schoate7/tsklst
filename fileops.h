@@ -5,6 +5,6 @@
 
 int saveList(Task* firstTask, int listLength);
 
-EditResult* openFile();
+EditResult* openFile(char* fname);
 
 #endif

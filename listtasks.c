@@ -18,7 +18,7 @@
 #define COMPLETION_PADDING 10
 
 
-bool checkIfDateHasPassed(Date* dueDate){
+static bool checkIfDateHasPassed(Date* dueDate){
     if(dueDate->year == 0){
         return false;
     }
@@ -48,7 +48,7 @@ bool checkIfDateHasPassed(Date* dueDate){
     }
 }
 
-char* centerStringToColumnLength(char* str, int len){
+static char* centerStringToColumnLength(char* str, int len){
     if(str == NULL || len <= 0){
         return NULL;
     }
@@ -71,7 +71,7 @@ char* centerStringToColumnLength(char* str, int len){
     return returnStr;
 }
 
-char* padStringToColumnLength(char* str, int len){
+static char* padStringToColumnLength(char* str, int len){
     if(str == NULL || len <= 0){
         return NULL;
     }
@@ -92,7 +92,7 @@ char* padStringToColumnLength(char* str, int len){
     return returnStr;
 }
 
-void printTaskLine(Task* task){
+static void printTaskLine(Task* task){
     bool dueDatePassed = checkIfDateHasPassed(task->dueDateStruct);
     Description* description = task -> description;
     int taskPriority = task->priority;
@@ -121,7 +121,7 @@ void printTaskLine(Task* task){
     free(i); free(index); free(taskName); free(priorityLabel); free(dueDate); free(completionStatus);
 }
 
-void listAllTasks(Task* firstTask){
+static void listAllTasks(Task* firstTask){
     Task* currentTask = firstTask;
 
     printf(TABLE_HEADER);
@@ -135,7 +135,7 @@ void listAllTasks(Task* firstTask){
 }
 
 //Returns 1 if newDate is earlier than originalDate, 0 if not, tie returns 0
-int compareDates(Date* originalDate, Date* newDate){
+static int compareDates(Date* originalDate, Date* newDate){
     if(newDate->year<originalDate->year){
         return 1;
     }else if(newDate->year>originalDate->year){
@@ -156,7 +156,7 @@ int compareDates(Date* originalDate, Date* newDate){
     return 0;
 }
 
-void listTasksbyDate(Task* firstTask, int listLength){
+static void listTasksbyDate(Task* firstTask, int listLength){
     Task* noDate[listLength];
     Task* withDate[listLength];
 
@@ -228,7 +228,7 @@ void listTasksbyDate(Task* firstTask, int listLength){
     }
 }
 
-void listTasksByCompletion(Task* firstTask, int listLength){
+static void listTasksByCompletion(Task* firstTask, int listLength){
     Task* complete[listLength];
     Task* incomplete[listLength];
 
@@ -277,7 +277,7 @@ void listTasksByCompletion(Task* firstTask, int listLength){
     }
 }
 
-void listTasksByPriority(Task* firstTask, int listLength){  
+static void listTasksByPriority(Task* firstTask, int listLength){  
     Task* highPriority[listLength];
     Task* medPriority[listLength];
     Task* lowPriority[listLength];
@@ -342,7 +342,7 @@ void listTasksByPriority(Task* firstTask, int listLength){
     }
 }
 
-void printTaskList(Task* firstTask, int listLength){
+void listTasksHandler(Task* firstTask, int listLength){
     if(firstTask == NULL){
         printf("\nTask list is empty, nothing to display.\n\n");
         return;

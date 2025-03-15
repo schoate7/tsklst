@@ -1,49 +1,10 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-enum Priority{
-    LOW,
-    MEDIUM,
-    HIGH
-};
-
-typedef struct Date{
-    int year;
-    int month;
-    int day;
-}Date;
-
-typedef struct Description{
-    char* data;
-    int length;
-
-}Description;
-
-typedef struct Task{
-    Description* description;
-    Date* dueDateStruct;
-    char* dueDate;
-    int index;
-    bool completed;
-    enum Priority priority;
-
-    struct Task *previousTask;
-    struct Task *nextTask;
-
-}Task;
-
-typedef struct EditResult{
-    Task* firstTask;
-    Task* lastTask;
-    int listLength;
-}EditResult;
-
-typedef struct TaskGroup{
-    Task* taskPtr;
-    Task* nextTask;
-
-}TaskGroup;
+#include "common.h"
+#include "Task.h"
 
 Description* createDescription(char* input){
     Description* desc = (Description*)calloc(1, sizeof(Description));

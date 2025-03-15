@@ -5,7 +5,6 @@
 #include "common.h"
 #include "Task.h"
 
-
 EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
     EditResult* newEndPoints = calloc(1, sizeof(EditResult));
     newEndPoints->firstTask = NULL;
@@ -23,22 +22,17 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
     Task* taskToMoveNext;
     Task* taskToFollow;
 
+    taskToMoveIndex = getTaskPrompt("Enter task number to move (0 to quit): ", listLength);
 
-    // Get user input, index of the task to be moved
-    while(taskToMoveIndex < 0 || taskToMoveIndex > listLength){
-        taskToMoveIndex = getInt("Enter task number to move (0 to quit): ");
-
-        if(taskToMoveIndex>listLength){
-            printf("Entry exceeds list length, enter number between 1 and %i\n", listLength);
-        }else if(taskToMoveIndex == 0){
-            printf("Aborting task move, returning to main menu...\n\n");
-            return newEndPoints;
-        }
+    if(taskToMoveIndex == 0){
+        printf("Aborting task move, returning to main menu...\n\n");
+        return newEndPoints;
     }
-    
-    Task* currentTask = firstTask;
+
+    taskToFollowIndex = getTaskPrompt("Enter task number to move behind (0 to front of list): ", listLength);
 
     // Get pointer to task to be moved
+    Task* currentTask = firstTask;
     for (int i = 0; i<=listLength; i++){
         if(currentTask->index == taskToMoveIndex){
             taskToMove = currentTask;
@@ -50,18 +44,6 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
             printf("Error moving task, returning to main menu...\n\n");
             return newEndPoints;
         }
-    }
-
-    while(taskToFollowIndex < 0 || taskToFollowIndex > listLength){
-        taskToFollowIndex = getInt("Enter task number to move behind (0 to front of list): ");
-
-        if(taskToFollowIndex == taskToMoveIndex){
-            printf("No change required, returning...\n\n");
-            return newEndPoints;
-        }else if (taskToFollowIndex > listLength){
-            printf("Entry exceeds list length, enter number between 0 and %i\n", listLength);
-        }
-
     }
 
     taskToMoveNext = taskToMove->nextTask;
@@ -103,7 +85,6 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
         taskToMove->nextTask = taskToFollow->nextTask;
         taskToFollow->nextTask = taskToMove;
         taskToMove->previousTask = taskToFollow;
-
     }
 
     if(taskToFollowIndex == 0){
@@ -125,14 +106,7 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
     newEndPoints->listLength = listLength;
 
     Task* reIndexPtr = newEndPoints->firstTask;
-
-    for(int i = 1; i<=listLength; i++){
-        reIndexPtr->index = i;
-
-        if(reIndexPtr->nextTask != NULL){
-            reIndexPtr = reIndexPtr->nextTask;
-        }
-    }
+    reIndexList(reIndexPtr, listLength);
 
     printf("Task moved successfully...\n\n");
 

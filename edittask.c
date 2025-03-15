@@ -6,7 +6,7 @@
 #include "common.h"
 #include "Task.h"
 
-void changeCompletionStatus(Task* firstTask, int listLength){
+static void completeTask(Task* firstTask, int listLength){
     Task* currentTask = firstTask;
     int inputIndex = -1;
     int i = 1;
@@ -15,14 +15,11 @@ void changeCompletionStatus(Task* firstTask, int listLength){
         printf("List is empty, returning to main menu...\n");
     }
 
-    while(inputIndex == -1 || inputIndex > listLength){
-        inputIndex = getInt("\nEnter a task number to update (0 to quit): ");
-        if(inputIndex > listLength){
-            printf("Task out of range, please input a number between 1 and %i, 0 to quit.\n", listLength);
-        }else if (inputIndex == 0){
-            printf("Returning to main menu...\n\n");
-            return;
-        }
+    inputIndex = getTaskPrompt("\nEnter a task number to update (0 to quit): ", listLength);
+
+    if(inputIndex == 0){
+        printf("Returning to main menu...\n\n");
+        return;
     }
 
     while(currentTask != NULL && currentTask->index != inputIndex){
@@ -62,6 +59,19 @@ void changeCompletionStatus(Task* firstTask, int listLength){
         printf("No change made, returning to main menu...\n\n");
         return;
     }
+}
+
+void completedTaskHandler(Task* firstTask, int listLength){
+    int opType = 0; 
+    
+    do{
+        opType = getInt("Do you wish to complete a task (1), or clear completed tasks (2)?: ");
+        if(opType < 1 || opType >= 2){
+            printf("Invalid entry, valid options: 1, 2.\n");
+        }
+    }while(opType < 0 || opType >= 2);
+
+    opType == 1 ? completeTask(firstTask, listLength) : printf("Clear completed tasks not yet developed...\n\n");
 }
 
 void updateTask(Task* firstTask, Task* lastTask, int listLength){

@@ -71,17 +71,21 @@ int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
     return 1;
 }
 
-EditResult* openFile(){
+EditResult* openFile(char* fname){
     EditResult* openedList = malloc(sizeof(EditResult));
     FILE *f;
     char* filename = malloc(100*sizeof(char));
 
-    printf("\nEnter file name to open: ");
-    scanf("%s", filename);
+    if(fname == NULL){
+        printf("\nEnter file name to open: ");
+        scanf("%s", filename);
 
-    if(strlen(filename)<1){
-        printf("No file name provided, returning...\n\n");
-        return NULL;
+        if(strlen(filename)<1){
+            printf("No file name provided, returning...\n\n");
+            return NULL;
+        }
+    }else{
+        strncpy(filename, fname, strlen(fname));
     }
 
     f = fopen(filename, "r");
@@ -149,7 +153,7 @@ int saveList(Task* firstTask, int listLength){
 
     f = fopen(filename, "w");
     if (f == NULL) {
-        perror("Error opening file\n\n");
+        perror("Error saving file\n\n");
         return 1;
     }
 

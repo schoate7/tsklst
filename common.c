@@ -68,6 +68,12 @@ int getFloat(char prompt[]){
     return f;
 }
 
+/*
+    Gets a due date in the future (day + 1 and later).
+    @param prompt - A string to use to prompt the user.
+    @param date - A date struct, referenced pointer is modified with new due date data.
+    @return - Returns a pointer to the new string due date.
+*/
 char* getDueDate(char* prompt, Date* date){
     char* dueDate = malloc(DATE_LEN * sizeof(char));
     char* dueDateEndPtr;
@@ -189,4 +195,27 @@ char* getDueDate(char* prompt, Date* date){
     }
     free(dueDay); free(dueMonth); free(dueYear);
     return dueDate;
+}
+
+void reIndexList(Task* taskPtr, int listLength){
+    for(int i = 1; i<=listLength; i++){
+        taskPtr->index = i;
+
+        if(taskPtr->nextTask != NULL){
+            taskPtr = taskPtr->nextTask;
+        }
+    }
+}
+
+int getTaskPrompt(char* prompt, int listLength){
+    int taskIndex = -1;
+
+    while(taskIndex < 0 || taskIndex > listLength){
+        taskIndex = getInt(prompt);
+
+        if(taskIndex>listLength){
+            printf("Entry exceeds list length, enter number between 1 and %i\n", listLength);
+        }
+    }
+    return taskIndex;
 }

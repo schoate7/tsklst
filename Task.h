@@ -1,7 +1,6 @@
 #ifndef Task_h
 #define Task_h
 #include <stdbool.h>
-#include <stdlib.h>
 
 enum Priority{
     LOW,
@@ -39,12 +38,6 @@ typedef struct EditResult{
     Task* lastTask;
     int listLength;
 }EditResult;
-
-typedef struct TaskGroup{
-    Task* taskPtr;
-    Task* nextTask;
-    
-}TaskGroup;
 
 Description* createDescription(char* input);
 

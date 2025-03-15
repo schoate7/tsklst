@@ -15,7 +15,7 @@
 #define SAVE_WARNING "\033[33mChanges must be saved before quitting.\033[0m\n"
 #define COMMAND_LIST "[L]ist | [A]dd | [D]elete | [E]dit | [M]ove | [C]omplete | [O]pen | [S]ave | [H]elp | [Q]uit:  "
 
-void home(char *fname[]){
+void home(char *fname){
     bool runMode = true;
     char selection = ' ';
     int currentIndex = 0;
@@ -27,12 +27,21 @@ void home(char *fname[]){
 
     printf(TITLE_BAR);
     printf(SAVE_WARNING);
+
+    if(fname != NULL){
+        editReturn = openFile(fname);
+        if(editReturn != NULL){
+            firstTask = editReturn->firstTask;
+            lastTask = editReturn->lastTask;
+            currentIndex = editReturn->listLength;
+        }
+    }
     
     while(runMode){
         selection = getChar(COMMAND_LIST);
         switch(selection){
             case 'L':
-                printTaskList(firstTask, currentIndex);
+                listTasksHandler(firstTask, currentIndex);
                 break;
             case 'A':
                 printf("\n");
@@ -73,13 +82,13 @@ void home(char *fname[]){
                 }
                 break;
             case 'C':
-                changeCompletionStatus(firstTask, currentIndex);
+                completedTaskHandler(firstTask, currentIndex);
                 break;
             case 'S':
                 saveList(firstTask, currentIndex);
                 break;
             case 'O':
-                editReturn = openFile();
+                editReturn = openFile(NULL);
                 if(editReturn != NULL){
                     firstTask = editReturn->firstTask;
                     lastTask = editReturn->lastTask;
@@ -103,6 +112,13 @@ void home(char *fname[]){
 
 int main(int argc, char *argv[]){
     char *fname;
-    home(&fname);
+    
+    if (argc >= 2){
+        home(argv[1]);
+    }else{
+        fname = NULL;
+        home(NULL);
+    }
+
     return 0;
 }
