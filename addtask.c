@@ -1,33 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 #include "common.h"
 #include "Task.h"
 
 #define DESCRIPTION_PROMPT "Enter description: "
-#define DUE_DATE_PROMPT "Add a due date (Y/N)? "
+#define DUE_DATE_PROMPT "Add a due date (Y/N)?: "
 #define PRIORITY_PROMPT "Enter priority [L]ow | [M]edium | [H]igh: "
 
-Task* addTask(Task* firstTask, Task* lastTask){
+int addTask(Task** firstTask, Task** lastTask, int listLength){
     Task* newTask = malloc(sizeof(Task));
-    Description* desc;
     Date* dateStruct = malloc(sizeof(Date));
-    char* dueDate = malloc(10 * sizeof(char));
 
-    char* descIn = NULL;
+    char* nameInput = NULL;
+    int nameInputLength = 0;
+    char* name;
     char priorityResponse;
     char dueDateResponse;    
 
-    while(descIn == NULL){
-        descIn = getString(DESCRIPTION_PROMPT);
-        desc = createDescription(descIn);
+    while(nameInput == NULL){
+        nameInput = getString(DESCRIPTION_PROMPT);
+        nameInputLength = strlen(nameInput);
+        name = calloc(nameInputLength, sizeof(char));
+        strncpy(name, nameInput, nameInputLength);
     }
+    newTask->name = name;
     
-    dueDate = getDueDate(DUE_DATE_PROMPT, dateStruct);
-    newTask->dueDateStruct = dateStruct;
+    getDueDate(DUE_DATE_PROMPT, dateStruct);
+    newTask->dueDate = dateStruct;
 
     priorityResponse = getChar(PRIORITY_PROMPT);
     printf("\n");
@@ -46,20 +47,23 @@ Task* addTask(Task* firstTask, Task* lastTask){
             newTask->priority = MEDIUM;
             break;
     }
-    newTask -> description = createDescription(desc -> data);
-    newTask -> dueDate = dueDate;
 
-    if(firstTask == NULL && lastTask == NULL){
-        return newTask;
+    listLength++;
+    newTask->index = listLength;
+
+    if(*firstTask == NULL && *lastTask == NULL){
+        *firstTask = newTask;
+        *lastTask = newTask;
+        return 1;
         
-    }else if(firstTask != NULL && lastTask == NULL){
-        firstTask -> nextTask = newTask;
-        newTask -> previousTask = lastTask;
-        return newTask;
+    }else if(*firstTask != NULL && *lastTask != NULL){
+        (*lastTask) -> nextTask = newTask;
+        newTask -> previousTask = *lastTask;
+        *lastTask = newTask;
 
+        return 1;
     }else{
-        lastTask -> nextTask = newTask;
-        newTask -> previousTask = lastTask;
-        return newTask;
+        printf("Error adding task, returning to main menu...\n\n");
+        return 0;
     }
 }

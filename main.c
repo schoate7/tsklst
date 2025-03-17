@@ -1,10 +1,9 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "addtask.h"
 #include "common.h"
+#include "deletetask.h"
 #include "edittask.h"
 #include "fileops.h"
 #include "listtasks.h"
@@ -13,89 +12,71 @@
 
 #define TITLE_BAR "------------------------------------\033[1mtsklst home\033[0m------------------------------------\n"
 #define SAVE_WARNING "\033[33mChanges must be saved before quitting.\033[0m\n"
-#define COMMAND_LIST "[L]ist | [A]dd | [D]elete | [E]dit | [M]ove | [C]omplete | [O]pen | [S]ave | [H]elp | [Q]uit:  "
+#define COMMAND_LIST "[L]ist | [A]dd | [E]dit | [M]ove | [D]elete | [O]pen | [S]ave | [H]elp | [Q]uit:  "
 
-void home(char *fname[]){
-    bool runMode = true;
+void home(char *fname){
+    int runMode = 1;
+    int changeCount = 0;
+
     char selection = ' ';
-    int currentIndex = 0;
+    int returnValue;
 
     Task *firstTask = NULL;
-    Task *returnTask = NULL;
     Task *lastTask = NULL;
-    EditResult *editReturn = NULL;
+    int listLength = 0;
 
     printf(TITLE_BAR);
     printf(SAVE_WARNING);
+
+    if(fname != NULL){
+        listLength = openFile(fname, &firstTask, &lastTask);
+    }
     
-    while(runMode){
+    while(runMode == 1){
         selection = getChar(COMMAND_LIST);
         switch(selection){
             case 'L':
-                printTaskList(firstTask, currentIndex);
+                listTasksHandler(firstTask, listLength);
                 break;
             case 'A':
                 printf("\n");
-                returnTask = addTask(firstTask, lastTask);
-                if (firstTask == NULL){
-                    currentIndex++;
-                    firstTask = returnTask;
-                    firstTask -> nextTask == NULL;
-                    lastTask = returnTask;
-                    firstTask -> index = currentIndex;
-                }else{
-                    currentIndex++;
-                    lastTask -> nextTask = returnTask;
-                    returnTask -> previousTask = lastTask;
-                    lastTask = returnTask;
-                    lastTask -> index = currentIndex;
-                    lastTask -> nextTask = NULL;
+                returnValue = addTask(&firstTask, &lastTask, listLength);
+                if(returnValue != 0){
+                    changeCount++;
+                    listLength++;
                 }
                 break;
             case 'D':
-                editReturn = deleteTask(firstTask, lastTask, currentIndex);
-                firstTask = editReturn -> firstTask;
-                lastTask = editReturn -> lastTask;
-                currentIndex = editReturn -> listLength;
-                free(editReturn);
+                returnValue = deleteMenu(&firstTask, &lastTask, listLength);
+                if (returnValue != listLength){
+                    changeCount++;
+                    listLength = returnValue;
+                }
                 break;
             case 'E':
-                updateTask(firstTask, lastTask, currentIndex);
+                editTaskMenu(firstTask, listLength);
                 break;
             case 'M':
-                editReturn = moveTask(firstTask, lastTask, currentIndex);
-                if(editReturn != NULL && editReturn->firstTask != NULL){
-                    firstTask = editReturn->firstTask;
-                    lastTask = editReturn->lastTask;
-                    free(editReturn);
-                }else{
-                    free(editReturn);
-                }
-                break;
-            case 'C':
-                changeCompletionStatus(firstTask, currentIndex);
+                changeCount += moveTask(&firstTask, &lastTask, listLength);
                 break;
             case 'S':
-                saveList(firstTask, currentIndex);
+                saveList(firstTask, listLength);
+                changeCount = 0;
                 break;
             case 'O':
-                editReturn = openFile();
-                if(editReturn != NULL){
-                    firstTask = editReturn->firstTask;
-                    lastTask = editReturn->lastTask;
-                    currentIndex = editReturn->listLength;
+                returnValue = checkUnsavedChanges(changeCount);
+                if(returnValue == 1){
+                    saveList(firstTask, listLength);
                 }
+                listLength = openFile(NULL, &firstTask, &lastTask);
+                changeCount = 0;
                 break;
             case 'Q':
-                while(selection != 'Y' && selection != 'N'){
-                    selection = getChar("Do you want to save changes (Y/N)? ");
-                    if(selection != 'Y' && selection != 'N'){
-                        printf("Invalid input, please select Y or N.\n");
-                    }else if(selection == 'Y'){
-                        saveList(firstTask, currentIndex);
-                    }
+                returnValue = checkUnsavedChanges(changeCount);
+                if(returnValue == 1){
+                    saveList(firstTask, listLength);
                 }
-                runMode = false;
+                runMode = 0;
                 break;
         }
     }
@@ -103,6 +84,12 @@ void home(char *fname[]){
 
 int main(int argc, char *argv[]){
     char *fname;
-    home(&fname);
+    
+    if (argc >= 2){
+        home(argv[1]);
+    }else{
+        fname = NULL;
+        home(NULL);
+    }
     return 0;
 }
