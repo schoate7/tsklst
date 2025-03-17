@@ -5,4 +5,6 @@
 
 void listTasksHandler(Task* firstTask, int listLength);
 
+void printTaskLine(Task* task);
+
 #endif

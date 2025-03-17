@@ -1,5 +1,4 @@
 #include <ctype.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,26 +67,14 @@ int getFloat(char prompt[]){
     return f;
 }
 
-/*
-    Gets a due date in the future (day + 1 and later).
-    @param prompt - A string to use to prompt the user.
-    @param date - A date struct, referenced pointer is modified with new due date data.
-    @return - Returns a pointer to the new string due date.
-*/
-char* getDueDate(char* prompt, Date* date){
-    char* dueDate = malloc(DATE_LEN * sizeof(char));
-    char* dueDateEndPtr;
-    char* dueMonth = malloc(DAY_MON_LEN * sizeof(char));
-    char* dueMonthEndPtr;
-    char* dueDay = malloc(DAY_MON_LEN * sizeof(char));
-    char* dueDayEndPtr;
-    char* dueYearIn;
-    char* dueYear = malloc(YEAR_LEN * sizeof(char));
-    char* dueYearEndPtr;
+void getDueDate(char* prompt, Date* date){
+    char* dueMonth = malloc(DAY_MON_LEN * sizeof(char)); char* dueMonthEndPtr;
+    char* dueDay = malloc(DAY_MON_LEN * sizeof(char)); char* dueDayEndPtr;
+    char* dueYear = malloc(YEAR_LEN * sizeof(char)); char* dueYearEndPtr;
 
-    if(dueDate == NULL || dueMonth == NULL || dueDay == NULL || dueYear == NULL){
+    if(dueMonth == NULL || dueDay == NULL || dueYear == NULL){
         printf("Error allocating memory, returning.\n\n");
-        return "None";
+        return;
     }
 
     char dueDateResponse;
@@ -97,7 +84,7 @@ char* getDueDate(char* prompt, Date* date){
     }
     
     if(dueDateResponse == 'Y' || prompt == NULL){    
-        bool futureDate = false;
+        int futureDate = 0;
         int inputLength;
         int dueDayInt, dueMonthInt, dueYearInt;
 
@@ -108,9 +95,9 @@ char* getDueDate(char* prompt, Date* date){
         int day = timeInfo -> tm_mday;
         int month = timeInfo -> tm_mon + 1;
         int year = timeInfo ->tm_year + 1900;
-        while(!futureDate){
+        while(futureDate == 0){
             inputLength = 0;
-            while(inputLength<1 || inputLength > 2){
+            while(inputLength < 1 || inputLength > 2){
                 dueDay = getString("Enter day: ");
                 inputLength = strlen(dueDay);
                 if(inputLength < 1 || inputLength > 2){
@@ -120,10 +107,6 @@ char* getDueDate(char* prompt, Date* date){
                     if(dueDayInt<1 || dueDayInt>31){
                         inputLength = 0;
                         printf("Day must be between 1 and 31\n");
-                    }
-                    if(inputLength == 1){
-                        dueDay[1] = dueDay[0];
-                        dueDay[0] = '0';
                     }
                 }
             }
@@ -139,24 +122,21 @@ char* getDueDate(char* prompt, Date* date){
                         inputLength = 0;
                         printf("Month must be between 1 and 12");
                     }
-                    if (inputLength == 1){
-                        dueMonth[1] = dueMonth[0];
-                        dueMonth[0] = '0';
-                    }
                 }
             }
+            char* dueYearInput;
             inputLength = 0;
             while(inputLength != 2 && inputLength != 4){
-                dueYearIn = getString("Enter year: ");
-                inputLength = strlen(dueYearIn);
+                dueYearInput = getString("Enter year: ");
+                inputLength = strlen(dueYearInput);
                 if(inputLength != 2 && inputLength !=4){
                     printf("Year must be two or four digits");
                 }else{
                     if(inputLength == 2){
                         strcpy(dueYear, "20");
-                        strcat(dueYear, dueYearIn);
+                        strcat(dueYear, dueYearInput);
                     }else{
-                        strcpy(dueYear, dueYearIn);
+                        strcpy(dueYear, dueYearInput);
                     }
                     dueYearInt = strtol(dueYear, &dueYearEndPtr, NUM_BASE);
                     if(dueYearInt < year){
@@ -166,47 +146,30 @@ char* getDueDate(char* prompt, Date* date){
                 }
             }
             if (dueYearInt > year){
-                futureDate = true;
+                futureDate = 1;
             }else if (dueYearInt == year){
                 if(dueMonthInt > month){
-                    futureDate = true;
+                    futureDate = 1;
                 }else if (dueMonthInt < month){
                     printf("Date in the past, due date must be in the future.\n");
                 }else if (dueMonthInt == month){
                     if(dueDayInt > day){
-                        futureDate = true;
+                        futureDate = 1;
                     }else{
                         printf("Date in the past, due date must be in the future.\n");
                     }
                 }
             }
         }
-        strcpy(dueDate, dueMonth);
-        strcat(dueDate, "/");
-        strcat(dueDate, dueDay);
-        strcat(dueDate, "/");
-        strcat(dueDate, dueYear);
         date->day = dueDayInt;
         date->month = dueMonthInt;
         date->year = dueYearInt;
     }else{
-        strcpy(dueDate, "None");
         date->day = 0;
         date->month = 0;
         date->year = 0;
     }
     free(dueDay); free(dueMonth); free(dueYear);
-    return dueDate;
-}
-
-void reIndexList(Task* taskPtr, int listLength){
-    for(int i = 1; i<=listLength; i++){
-        taskPtr->index = i;
-
-        if(taskPtr->nextTask != NULL){
-            taskPtr = taskPtr->nextTask;
-        }
-    }
 }
 
 int getTaskPrompt(char* prompt, int listLength){
@@ -222,6 +185,7 @@ int getTaskPrompt(char* prompt, int listLength){
     return taskIndex;
 }
 
+
 Task* getSelectedTask(Task* firstTask, int inputIndex){
     Task* currentTask = firstTask;
     int i = 1;
@@ -235,4 +199,36 @@ Task* getSelectedTask(Task* firstTask, int inputIndex){
         }
     }
     return currentTask;
+}
+
+int reIndexTasks(Task** firstTask, Task** lastTask){
+    int i = 1;
+    Task* currentTask = *firstTask;
+
+    while(currentTask->nextTask != NULL){
+        currentTask -> index = i;
+        currentTask = currentTask->nextTask;
+        i++;
+    }
+    currentTask -> index = i;
+    *lastTask = currentTask;
+    return i;
+}
+
+int checkUnsavedChanges(int changeCount){
+    char response;
+
+    if(changeCount > 0){
+        while(response != 'Y' && response != 'N'){
+            response = getChar("\033[33mYou have unsaved changes, do you want to save? [Y/N]: \033[0m");
+            if(response == 'Y'){
+                return 1;
+            }else if (response == 'N'){
+                return 0;
+            }else{
+                printf("Invalid input, please select Y or N.\n");
+            }
+        }
+    }
+    return 0;
 }

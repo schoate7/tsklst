@@ -5,13 +5,11 @@
 #include "common.h"
 #include "Task.h"
 
-EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
-    EditResult* newEndPoints = calloc(1, sizeof(EditResult));
-    newEndPoints->firstTask = NULL;
+int moveTask(Task** firstTask, Task** lastTask, int listLength){
 
     if(listLength == 0 || firstTask == NULL){
-        printf("List is empty, nothing to move...\n\n");
-        return newEndPoints;
+        printf("\nList is empty, nothing to move...\n\n");
+        return 0;
     }
 
     int taskToMoveIndex = -1;
@@ -22,17 +20,17 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
     Task* taskToMoveNext;
     Task* taskToFollow;
 
-    taskToMoveIndex = getTaskPrompt("Enter task number to move (0 to quit): ", listLength);
+    taskToMoveIndex = getTaskPrompt("\nEnter task number to move (0 to quit): ", listLength);
 
     if(taskToMoveIndex == 0){
         printf("Aborting task move, returning to main menu...\n\n");
-        return newEndPoints;
+        return 0;
     }
 
     taskToFollowIndex = getTaskPrompt("Enter task number to move behind (0 to front of list): ", listLength);
 
     // Get pointer to task to be moved
-    Task* currentTask = firstTask;
+    Task* currentTask = *firstTask;
     for (int i = 0; i<=listLength; i++){
         if(currentTask->index == taskToMoveIndex){
             taskToMove = currentTask;
@@ -42,7 +40,7 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
             currentTask = currentTask->nextTask;
         }else if(currentTask->nextTask == NULL){
             printf("Error moving task, returning to main menu...\n\n");
-            return newEndPoints;
+            return 0;
         }
     }
 
@@ -57,15 +55,15 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
         taskToMove->nextTask->previousTask = taskToMove->previousTask;
     }
 
-    currentTask = lastTask;
+    currentTask = *lastTask;
 
     if(taskToFollowIndex == 0){
-        taskToMove->nextTask = firstTask;
-        firstTask->previousTask = taskToMove;
+        taskToMove->nextTask = *firstTask;
+        (*firstTask)->previousTask = taskToMove;
         taskToMove->previousTask = NULL;
     }else if(taskToFollowIndex == listLength){
-        taskToMove->previousTask = lastTask;
-        lastTask->nextTask = taskToMove;
+        taskToMove->previousTask = *lastTask;
+        (*lastTask)->nextTask = taskToMove;
         taskToMove->nextTask = NULL;
     }else{
         for(int i = listLength; i>=taskToFollowIndex; i--){
@@ -75,7 +73,7 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
                 currentTask = currentTask-> previousTask;
             }else{
                 printf("Error moving task, returning to main menu...\n\n");
-                return newEndPoints;
+                return 0;
             }
         }
 
@@ -88,27 +86,19 @@ EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength){
     }
 
     if(taskToFollowIndex == 0){
-        newEndPoints->firstTask = taskToMove;
+        *firstTask = taskToMove;
     }else if(taskToMoveIndex == 1){
-        newEndPoints->firstTask = taskToMoveNext;
-    }else{
-        newEndPoints->firstTask = firstTask;
+        *firstTask = taskToMoveNext;
     }
 
     if(taskToFollowIndex == listLength){
-        newEndPoints->lastTask = taskToMove;
+        *lastTask = taskToMove;
     }else if(taskToMoveIndex == listLength){
-        newEndPoints->lastTask = taskToMovePrev;
-    }else{
-        newEndPoints->lastTask = lastTask;
+        *lastTask = taskToMovePrev;
     }
 
-    newEndPoints->listLength = listLength;
-
-    Task* reIndexPtr = newEndPoints->firstTask;
-    reIndexList(reIndexPtr, listLength);
+    reIndexTasks(firstTask, lastTask);
 
     printf("Task moved successfully...\n\n");
-
-    return newEndPoints;
+    return 1;
 }

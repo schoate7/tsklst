@@ -4,6 +4,6 @@
 
 #include "Task.h"
 
-EditResult* moveTask(Task* firstTask, Task* lastTask, int listLength);
+int moveTask(Task** firstTask, Task** lastTask, int listLength);
 
 #endif

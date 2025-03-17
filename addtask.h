@@ -3,6 +3,6 @@
 
 #include "Task.h"
 
-Task* addTask(Task* firstTask, Task* lastTask);
+int addTask(Task** firstTask, Task** lastTask, int listLength);
 
 #endif

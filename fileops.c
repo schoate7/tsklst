@@ -2,23 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "edittask.h"
 #include "Task.h"
 
 #define BASE_NUM 10
 
-int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
+static int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
     char* column;
     int count = 0;
 
     int index;
-    char* descStr;
-    Description* desc;
+    char* name;
+    int nameLength;
     int priorityNum;
     enum Priority priority;
     char* dueDate;
-    int completionNum;
-    bool completion;
+    int completion;
     Date* dateStruct = calloc(1, sizeof(Date));
 
     column = strtok(line, ",");
@@ -29,27 +27,24 @@ int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
                 index = strtol(column, &columnEndPtr, BASE_NUM);
                 break;
             case 1:
-                descStr = column;
-                desc = createDescription(descStr);
+                nameLength = strlen(column);
+                name = calloc(nameLength, sizeof(char));
+                strncpy(name, column, nameLength);
                 break;
             case 2:
                 priorityNum = strtol(column, &columnEndPtr, BASE_NUM);
                 priority = priorityNum == 0 ? LOW : priorityNum == 2 ? HIGH : MEDIUM; 
                 break;
             case 3:
-                dueDate = column;
+                completion = strtol(column, &columnEndPtr, BASE_NUM);
                 break;
             case 4:
-                completionNum = strtol(column, &columnEndPtr, BASE_NUM);
-                completion = completionNum;
-                break;
-            case 5:
                 dateStruct->year = strtol(column, &columnEndPtr, BASE_NUM);
                 break;
-            case 6:
+            case 5:
                 dateStruct->month = strtol(column, &columnEndPtr, BASE_NUM);
                 break;
-            case 7:
+            case 6:
                 dateStruct->day = strtol(column, &columnEndPtr, BASE_NUM);
                 break;
             default:
@@ -60,19 +55,16 @@ int parseCSVRow(char* line, Task* taskPtr, Task* prvTaskPtr){
     }
 
     taskPtr->index = index;
-    taskPtr->description = desc;
+    taskPtr->name = name;
     taskPtr->priority = priority;
-    taskPtr->dueDate = calloc(12, sizeof(char));
-    strcpy(taskPtr->dueDate, dueDate);
     taskPtr->completed = completion;
     taskPtr->previousTask = prvTaskPtr;
-    taskPtr->dueDateStruct = dateStruct;
+    taskPtr->dueDate = dateStruct;
 
     return 1;
 }
 
-EditResult* openFile(char* fname){
-    EditResult* openedList = malloc(sizeof(EditResult));
+int openFile(char* fname, Task** firstTask, Task** lastTask){
     FILE *f;
     char* filename = malloc(100*sizeof(char));
 
@@ -82,7 +74,7 @@ EditResult* openFile(char* fname){
 
         if(strlen(filename)<1){
             printf("No file name provided, returning...\n\n");
-            return NULL;
+            return 0;
         }
     }else{
         strncpy(filename, fname, strlen(fname));
@@ -91,8 +83,7 @@ EditResult* openFile(char* fname){
     f = fopen(filename, "r");
     if (f == NULL){
         perror("Error opening file\n\n");
-        openedList = NULL;
-        return openedList;
+        return 0;
     }
 
     char line[300];
@@ -108,7 +99,7 @@ EditResult* openFile(char* fname){
             Task* task = malloc(sizeof(Task));
             if(parseCSVRow(line, task, prvTask)){
                 if(lineIndex == 1){
-                    openedList->firstTask = task;
+                    *firstTask = task;
                 }
                 if(prvTask != NULL){
                     prvTask->nextTask = task;
@@ -122,20 +113,19 @@ EditResult* openFile(char* fname){
     }
     lineIndex--;
 
-    openedList->lastTask = prvTask;
-    openedList->listLength = lineIndex;
+    *lastTask = prvTask;
 
     printf("File \"%s\" opened successfully...\n\n", filename);
 
     fclose(f);
     free(filename);
 
-    return openedList;
+    return lineIndex;
 }
 
 int saveList(Task* firstTask, int listLength){
     FILE *f;
-    char* filename;
+    char* filename = calloc(100, sizeof(char));
 
     Task* currentTask = firstTask;
 
@@ -144,7 +134,7 @@ int saveList(Task* firstTask, int listLength){
     }
     
     printf("\nEnter the filename to save (default is list): ");
-    scanf("%s", filename);
+    scanf("%95s", filename);
 
     if(strlen(filename)<1){
         strcpy(filename, "list");
@@ -157,7 +147,7 @@ int saveList(Task* firstTask, int listLength){
         return 1;
     }
 
-    fprintf(f, "%s,%s,%s,%s,%s", "index", "name", "priority", "duedate", "completionstatus\n");
+    fprintf(f, "%s,%s,%s,%s,%s,%s,%s\n", "index", "name", "priority", "completionstatus", "dueYear", "dueMonth", "dueDay");
 
     int taskPriority;
     int taskCompletion;
@@ -165,17 +155,18 @@ int saveList(Task* firstTask, int listLength){
     while(currentTask->nextTask != NULL){
         taskPriority = currentTask -> priority;
         taskCompletion = currentTask -> completed;
-        fprintf(f, "%i,%s,%i,%s,%i,%i,%i,%i\n", currentTask->index, currentTask->description->data, taskPriority, 
-            currentTask->dueDate, taskCompletion, currentTask->dueDateStruct->year, currentTask->dueDateStruct->month, currentTask->dueDateStruct->day);
+        fprintf(f, "%i,%s,%i,%i,%i,%i,%i\n", currentTask->index, currentTask->name, taskPriority, 
+            taskCompletion, currentTask->dueDate->year, currentTask->dueDate->month, currentTask->dueDate->day);
         currentTask = currentTask->nextTask;
     }
     
     taskPriority = currentTask -> priority;
     taskCompletion = currentTask -> completed;
-    fprintf(f, "%i,%s,%i,%s,%i,%i,%i,%i", currentTask->index, currentTask->description->data, taskPriority, 
-        currentTask->dueDate, taskCompletion, currentTask->dueDateStruct->year, currentTask->dueDateStruct->month, currentTask->dueDateStruct->day);
+    fprintf(f, "%i,%s,%i,%i,%i,%i,%i", currentTask->index, currentTask->name, taskPriority, 
+        taskCompletion, currentTask->dueDate->year, currentTask->dueDate->month, currentTask->dueDate->day);
 
     fclose(f);
     printf("List saved to %s...\n\n", filename);
+    free(filename);
     return 0;
 }

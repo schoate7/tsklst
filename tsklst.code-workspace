@@ -11,7 +11,9 @@
 			"stdio.h": "c",
 			"stdlib.h": "c",
 			"stdbool.h": "c",
-			"wchar.h": "c"
+			"wchar.h": "c",
+			"deletetask.h": "c",
+			"fileops.h": "c"
 		}
 	}
 }
