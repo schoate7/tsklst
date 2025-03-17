@@ -185,7 +185,6 @@ int getTaskPrompt(char* prompt, int listLength){
     return taskIndex;
 }
 
-
 Task* getSelectedTask(Task* firstTask, int inputIndex){
     Task* currentTask = firstTask;
     int i = 1;

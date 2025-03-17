@@ -1,4 +1,5 @@
 list.csv
 todo.txt
 tsklst.code-workspace
-.vscode/
+.vscode
+tsklst.dSYM
